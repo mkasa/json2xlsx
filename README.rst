@@ -150,6 +150,31 @@ The generated table will look like this.
 
 Nesting is allowed.
 
+Multiple Tables, Multiple Sheets
+--------------------------------
+You can create multiple tables in a sheet::
+
+    # You can write comments here.
+    namesheet "Employee List";
+    table { "name", "age", "sex"; }
+    load "employee1.json";
+    # vskip adds a space of specified lines.
+    vskip 1;
+    table { "company", "revenue"; }
+    # You can add as many files.
+    load "company1.json";
+    load "company2.json";
+    # Create a new sheet. The first sheet is implicitly created so we did not need it.
+    newsheet;
+    namesheet "Products";
+    table { "product", "code", "price"; }
+    load "product1.json";
+    load "product2.json";
+
+Miscellanous
+------------
+You can use non-ASCII characters. UTF-8 is the only supported coding.
+
 License
 -------
 Modified BSD License.
