@@ -70,9 +70,9 @@ TableStatements = ZeroOrMore(TableStatement)
 TableBlock = LBRACE - TableStatements - RBRACE
 GroupBlock << TableBlock
 TableProperty = BorderAddition
-TableDeclaration = Suppress(Keyword("table")) - LiteralString - Group(Optional(ColorAddition)) - Group(ZeroOrMore(TableProperty)) - TableBlock
+TableDeclaration = Suppress(Keyword("table")) - Group(Optional(LiteralString)) - Group(Optional(ColorAddition)) - Group(ZeroOrMore(TableProperty)) - TableBlock
 TableDeclaration.setParseAction( lambda s,l,t: \
-        merge_dict({"type": "table", "content": t[3:], "caption": t[0], "color": upk(t[1])}, t[2].asList()) )
+        merge_dict({"type": "table", "content": t[3:], "caption": upk(t[0]), "color": upk(t[1])}, t[2].asList()) )
 LoadFromFileStatement = Suppress(Keyword("load")) - LiteralString - Group(Optional(Suppress("as") | LiteralString)) - DELIMITER
 LoadFromFileStatement.setParseAction( lambda s,l,t: {"type": "load", "filename": t[0], "caption": upk(t[1])} )
 LoadCSVFromFileStatement = Suppress(Keyword("loadcsv")) - LiteralString - Group(Optional(Suppress("as") | LiteralString)) - DELIMITER
@@ -113,7 +113,10 @@ def size_render(table_scr_tree):
         elif node_type == 'table':
             (child_y, child_x) = size_render(node['content'])
             x_size += child_x
-            y_size = max(y_size, child_y + 1)
+            if node['caption'] == None:
+                y_size = max(y_size, child_y)
+            else:
+                y_size = max(y_size, child_y + 1)
         elif node_type == 'group':
             (child_y, child_x) = size_render(node['content'])
             x_size += child_x
@@ -186,12 +189,14 @@ def render(workbook, cursor, y_range, x_range, render_state, tree):
         elif node_type == 'table':
             cell = current_sheet.cell(row = cursor[0], column = cursor[1])
             caption = node['caption']
-            set_cell_value_and_wrap_if_needed(cell, caption)
-            set_cell_color_if_needed(cell, node.get('color'))
-            current_sheet.merge_cells(start_row = cursor[0], start_column = cursor[1], end_row = cursor[0], end_column = cursor[1] + x_range - 1)
-            set_range_border_if_needed(current_sheet, [cursor[0], cursor[0] + y_range - 1], [cursor[1], cursor[1] + x_range - 1], node.get('border'))
+            new_cursor = [cursor[0], cursor[1]]
+            if caption != None:
+                set_cell_value_and_wrap_if_needed(cell, caption)
+                set_cell_color_if_needed(cell, node.get('color'))
+                current_sheet.merge_cells(start_row = cursor[0], start_column = cursor[1], end_row = cursor[0], end_column = cursor[1] + x_range - 1)
+                set_range_border_if_needed(current_sheet, [cursor[0], cursor[0] + y_range - 1], [cursor[1], cursor[1] + x_range - 1], node.get('border'))
+                new_cursor[0] += 1
             children = node['content']
-            new_cursor = [cursor[0] + 1, cursor[1]]
             render(workbook, new_cursor, y_range - 1, x_range, render_state, children)
             render_state['table.left']  = cursor[1]
             render_state['table.right'] = cursor[1] + x_range - 1
