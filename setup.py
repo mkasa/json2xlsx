@@ -7,7 +7,7 @@ def read_from_file(fname):
         return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name='json2xlsx',
-      version='1.0.9',
+      version='1.2.1',
       description='Tool to generate xlsx (Excel spreadsheet) from JSON',
       long_description=read_from_file('README.rst'),
       author='Masahiro Kasahara',
@@ -17,7 +17,7 @@ setup(name='json2xlsx',
       packages=['json2xlsx', 'json2xlsx.utilities'],
       zip_safe=True,
       classifiers=[
-          'Development Status :: 4 - Beta',
+          'Development Status :: 3 - Alpha',
           'Environment :: Console',
           'Intended Audience :: Developers',
           'Intended Audience :: End Users/Desktop',

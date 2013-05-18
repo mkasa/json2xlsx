@@ -132,6 +132,24 @@ You can use `,` instead of `;`::
 
 `,` and `;` are interchangable except for specifying coordinates.
 
+Adding Title to Table
+---------------------
+You can put the table title between `table` and `{`::
+
+    table "Employee" { name; age; sex; }
+
+This will create a table like this.
+
++------------------+
+|Employee          |
++-----+-----+------+
+|name | age | sex  |
++-----+-----+------+
+|John | 30  | male |
++-----+-----+------+
+|Alice| 18  |female|
++-----+-----+------+
+
 Adding Styles
 -------------
 You can add styles to columns::
@@ -268,6 +286,10 @@ then you can skip the first line.
 Miscellanous
 ------------
 You can use non-ASCII characters. UTF-8 is the only supported coding.
+
+Note
+----
+Suggestions and comments are welcome.
 
 License
 -------
