@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 
+import os
 from setuptools import setup
 
+def read_from_file(fname):
+        return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
 setup(name='json2xlsx',
-      version='1.0',
+      version='1.0.1',
       description='Tool to generate xlsx (Excel spreadsheet) from JSON',
+      long_description=read_from_file('README.rst'),
       author='Masahiro Kasahara',
       author_email='mkasa@cb.k.u-tokyo.ac.jp',
       url='http://github.com/mkasa/json2xlsx',
@@ -31,10 +36,5 @@ setup(name='json2xlsx',
               'json2xlsx = json2xlsx.utilities.json2xlsx:main'
           ]
       },
-      install_requires = [
-          'argparse>=1.2.1',
-          'openpyxl>=1.5.7',
-          'pyparsing>=1.5.5'
-      ],
       )
 

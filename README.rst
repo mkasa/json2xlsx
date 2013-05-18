@@ -1,10 +1,11 @@
+=========
 json2xlsx
 =========
 A tool to generate xlsx (Excel Spreadsheet) files from JSON files
 
 Installation
 ------------
-Install as general python modules. Briefly,
+Install as general python modules. Briefly, do as follows::
 
     $ mkdir some_temporary_dir
     $ cd some_temporary_dir
@@ -18,7 +19,7 @@ by `easy_install json2xlsx` or `pip install json2xlsx`.
 
 Simple Example
 --------------
-Let's begin with a smallest example.
+Let's begin with a smallest example::
 
     $ cat test.json
     {"name": "John", "age": 30, "sex": "male"}
@@ -29,15 +30,17 @@ Let's begin with a smallest example.
 This will create an Excel Spreadsheet 'output.xlsx' that contains
 a table like this:
 
- name | age | sex  
-------|-----|-----
- John | 30  | male 
++-----+-----+-----+
+|name | age | sex |
++-----+-----+-----+
+|John | 30  | male|
++-----+-----+-----+
 
 Isn't it super-easy?
 
 License
 -------
-MIT License.
+Modified BSD License.
 
 Author
 ------
