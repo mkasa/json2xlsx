@@ -202,6 +202,21 @@ Below we show the coordinates.
 
 At this moment, negative values are not allowed for coordinates.
 
+CSV Support
+-----------
+Comma Separated Values (CSV) is also supported.
+Let's see an example::
+
+    table { "name", "age", "sex"; }
+    loadcsv "employee1.csv";
+
+Here is the content of employee1.csv::
+
+    "John","30","male"
+    "Alice","18","female"
+
+Note that the order of the column must be the same as the column definition in the table.
+
 Miscellanous
 ------------
 You can use non-ASCII characters. UTF-8 is the only supported coding.

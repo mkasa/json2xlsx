@@ -55,7 +55,7 @@ NumberStyleAddition.setParseAction( lambda s,l,t: {"number": t[0]} )
 ColumnWidthAddition = Suppress(Keyword("width")) - NumberString
 ColumnWidthAddition.setParseAction( lambda s,l,t: {"column_width": t[0]} )
 AttributeProperty = ColorAddition | AlignmentAddition | HeadingAlignmentAddition | NumberStyleAddition | ColumnWidthAddition
-AttributeStatement = QuoteString - Group(Optional(Suppress("as") - LiteralString)) - Group(ZeroOrMore(AttributeProperty))
+AttributeStatement = BareString - Group(Optional(Suppress("as") - LiteralString)) - Group(ZeroOrMore(AttributeProperty))
 AttributeStatement.setParseAction( lambda s,l,t: \
         merge_dict({"type": "attr", "select": t[0], "caption": upk(t[1])}, t[2].asList()) )
 GroupBlock = Forward()
@@ -75,8 +75,8 @@ TableDeclaration.setParseAction( lambda s,l,t: \
         merge_dict({"type": "table", "content": t[3:], "caption": upk(t[0]), "color": upk(t[1])}, t[2].asList()) )
 LoadFromFileStatement = Suppress(Keyword("load")) - LiteralString - Group(Optional(Suppress("as") | LiteralString)) - DELIMITER
 LoadFromFileStatement.setParseAction( lambda s,l,t: {"type": "load", "filename": t[0], "caption": upk(t[1])} )
-LoadCSVFromFileStatement = Suppress(Keyword("loadcsv")) - LiteralString - Group(Optional(Suppress("as") | LiteralString)) - DELIMITER
-LoadCSVFromFileStatement.setParseAction( lambda s,l,t: {"type": "loadcsv", "filename": t[0], "caption": upk(t[1])} )
+LoadCSVFromFileStatement = Suppress(Keyword("loadcsv")) - LiteralString - Group(Optional(Suppress("as") | LiteralString)) - Group(Optional(delimitedList(NumberString))) - DELIMITER
+LoadCSVFromFileStatement.setParseAction( lambda s,l,t: {"type": "loadcsv", "filename": t[0], "caption": upk(t[1]), "column_order": t[2]} )
 WriteToFileStatement = Suppress(Keyword("write") | Keyword("save")) - LiteralString - Group(Optional(Keyword("open"))) - DELIMITER
 WriteToFileStatement.setParseAction( lambda s,l,t: {"type": "save", "filename": t[0], "open": upk(t[1])} )
 ShowHeaderStatement = Suppress(Keyword("header")) - DELIMITER
@@ -178,7 +178,7 @@ def render(workbook, cursor, y_range, x_range, render_state, tree):
         if debugging: print "Process ", node
         node_type = node['type']
         if node_type == 'attr':
-            cell = current_sheet.cell(row = cursor[0] + y_range - 1, column = cursor[1])
+            cell = current_sheet.cell(row = cursor[0] + y_range, column = cursor[1])
             caption = node.get('caption')
             if caption == None: caption = node['select']
             set_cell_value_and_wrap_if_needed(cell, caption)
@@ -237,13 +237,18 @@ def select_json(json_object, select_stmt):
         raise RenderingDataError("No such attr '%s'" % select_stmt)
     return json_object
 
-def render_csv_data(workbook, cursor, render_state, csv):
+def render_csv_data(workbook, cursor, render_state, column_order, csv):
     if debugging: print "Render CSV Data ", ','.join(csv)
     current_sheet = render_state['current_sheet']
-    for value in csv:
+    if debugging: print "Column Order: ", column_order, len(column_order)
+    if len(column_order) == 0:
+        column_order = [x for x in range(0, len(csv))]
+    else:
+        column_order = [int(x) for x in column_order]
+    for index in range(len(column_order)):
         if debugging: print "Process ", value
         cell = current_sheet.cell(row = cursor[0], column = cursor[1])
-        cell.value = value
+        cell.value = csv[column_order[index]]
         try:
             cell_style = render_state['column_to_attr'][cursor[1]]
         except:
@@ -332,12 +337,12 @@ def main_real():
         workbook.save(filename = file_name)
         has_anything_output[0] = True
 
-    def load_from_csv_file_and_render(file_name, caption):
+    def load_from_csv_file_and_render(file_name, column_order, caption):
         try:
             with open(file_name, 'r') as csvfile:
                 reader = csv.reader(csvfile)
                 for row in reader:
-                    render_csv_data(workbook, cursor, render_state, row)
+                    render_csv_data(workbook, cursor, render_state, column_order, row)
         except IOError as e:
             print "ERROR: could not open '%s'. %s" % (file_name, e.strerror)
             sys.exit(4)
@@ -348,11 +353,20 @@ def main_real():
         except:
             print "ERROR: could not open '%s'" % file_name
             sys.exit(4)
-        if type(json_obj) is dict:
-            json_obj['file_name'] = file_name
-            json_obj['file_caption'] = caption
-        render_state['json_object'] = json_obj
-        render_data(workbook, cursor, render_state, [render_state['current_table']])
+        if type(json_obj) == type([]):
+            for i, child in enumerate(json_obj):
+                if(child) is dict:
+                    child['file_name'] = file_name
+                    child['file_caption'] = caption
+                    child['file_index'] = i
+                render_state['json_object'] = child
+                render_data(workbook, cursor, render_state, [render_state['current_table']])
+        else:
+            if type(json_obj) is dict:
+                json_obj['file_name'] = file_name
+                json_obj['file_caption'] = caption
+            render_state['json_object'] = json_obj
+            render_data(workbook, cursor, render_state, [render_state['current_table']])
 
     def interpret_render_scr_tree(node):
         node_type = node['type']
@@ -369,7 +383,7 @@ def main_real():
             if node_type == 'load':
                 load_from_json_file_and_render(node['filename'], node['caption'])
             elif node_type == 'loadcsv':
-                load_from_csv_file_and_render(node['filename'], node['caption'])
+                load_from_csv_file_and_render(node['filename'], node['column_order'], node['caption'])
         elif node_type == 'save':
             write_the_book_to_file(node['filename'])
             if node['open'] != None: subprocess.call(["open", node['filename']])
