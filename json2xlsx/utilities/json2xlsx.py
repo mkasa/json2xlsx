@@ -38,7 +38,8 @@ RBRACE = Suppress("}")
 COMMA = Suppress(",")
 DELIMITER = Suppress(";") | Suppress(",")
 BareString = Word(alphas + "._", alphanums + "._")
-NumberString = Word("0123456789")
+NumberString = Optional("-") + Word("0123456789")
+NumberString.setParseAction( lambda s,l,t: t[0] + t[1] if 1 < len(t) else t[0] )
 QuoteString = QuotedString(quoteChar="\"", escChar="\\")
 QuoteString.setParseAction( lambda s,l,t: t[0].replace("\\n", "\n") )
 LiteralString = QuoteString | BareString
@@ -248,7 +249,11 @@ def render_csv_data(workbook, cursor, render_state, column_order, csv):
     for index in range(len(column_order)):
         if debugging: print "Process ", value
         cell = current_sheet.cell(row = cursor[0], column = cursor[1])
-        cell.value = csv[column_order[index]]
+        csv_index = column_order[index]
+        if 0 <= csv_index:
+            cell.value = csv[csv_index]
+        else:
+            cell.value = ""
         try:
             cell_style = render_state['column_to_attr'][cursor[1]]
         except:
@@ -319,6 +324,7 @@ def main_real():
     parser.add_argument('-r', help='rendering script file')
     parser.add_argument('-o', help='output file')
     parser.add_argument('--open', action='store_true', help='open the generated file immediately')
+    parser.add_argument('-l', action='store_true', help='use one-line-one-JSON-object file as input')
     parser.add_argument('-j', action='append', help='input json')
     parser.add_argument('-n', action='append', help='name for inputs (This option must be repeated as many times as -j')
     args = parser.parse_args()
@@ -344,29 +350,52 @@ def main_real():
                 for row in reader:
                     render_csv_data(workbook, cursor, render_state, column_order, row)
         except IOError as e:
-            print "ERROR: could not open '%s'. %s" % (file_name, e.strerror)
+            print >>sys.stderr, "ERROR: could not open '%s'. %s" % (file_name, e.strerror)
             sys.exit(4)
 
-    def load_from_json_file_and_render(file_name, caption):
-        try:
-            json_obj = json.load(open(file_name, "r"))
-        except:
-            print "ERROR: could not open '%s'" % file_name
-            sys.exit(4)
-        if type(json_obj) == type([]):
-            for i, child in enumerate(json_obj):
-                if(child) is dict:
-                    child['file_name'] = file_name
-                    child['file_caption'] = caption
-                    child['file_index'] = i
-                render_state['json_object'] = child
-                render_data(workbook, cursor, render_state, [render_state['current_table']])
+    def load_from_json_file_and_render(file_name, caption, one_json_obj_per_line):
+        if not one_json_obj_per_line:
+            try:
+                json_obj = json.load(open(file_name, "r"))
+            except IOError as a:
+                print >>sys.stderr, "ERROR: could not open '%s'" % file_name
+                sys.exit(4)
         else:
-            if type(json_obj) is dict:
-                json_obj['file_name'] = file_name
-                json_obj['file_caption'] = caption
-            render_state['json_object'] = json_obj
-            render_data(workbook, cursor, render_state, [render_state['current_table']])
+            try:
+                file_obj = open(file_name, "r")
+                line_number = 0
+            except:
+                print >>sys.stderr, "ERROR: could not open '%s'" % file_name
+                sys.exit(6)
+        while True:
+            try:
+                if one_json_obj_per_line:
+                    line_number += 1
+                    try:
+                        line_str = file_obj.readline().strip()
+                    except:
+                        print >>sys.stderr, "ERROR: read error at line ", line_number
+                        sys.exit(7)
+                    if line_str == "": return
+                    json_obj = json.loads(line_str)
+            except:
+                print >>sys.stderr, "ERROR: JSON error at line ", line_number
+                sys.exit(5)
+            if type(json_obj) == type([]):
+                for i, child in enumerate(json_obj):
+                    if(child) is dict:
+                        child['file_name'] = file_name
+                        child['file_caption'] = caption
+                        child['file_index'] = i
+                    render_state['json_object'] = child
+                    render_data(workbook, cursor, render_state, [render_state['current_table']])
+            else:
+                if type(json_obj) is dict:
+                    json_obj['file_name'] = file_name
+                    json_obj['file_caption'] = caption
+                render_state['json_object'] = json_obj
+                render_data(workbook, cursor, render_state, [render_state['current_table']])
+            if not one_json_obj_per_line: break
 
     def interpret_render_scr_tree(node):
         node_type = node['type']
@@ -407,7 +436,7 @@ def main_real():
 
     if args.j != None:
         if args.n != None and len(args.j) != len(args.n):
-            print "ERROR: -n must be given as exactly the same time as -j"
+            print >>sys.stderr, "ERROR: -n must be given as exactly the same time as -j"
             sys.exit(1)
         for json_file, caption in zip(args.j, args.n if args.n != None else [None] * len(args.j)):
             if debugging: print "Render ", json_file
@@ -415,7 +444,7 @@ def main_real():
                 (y_size, x_size) = size_render([render_state['current_table']])
                 render(workbook, cursor, y_size, x_size, render_state, [render_state['current_table']])
                 render_state['header_needed'] = False
-            load_from_json_file_and_render(json_file, json_file if caption == None else caption)
+            load_from_json_file_and_render(json_file, json_file if caption == None else caption, args.l)
 
     if args.o != None or args.j != None:
         if args.o == None and args.j != None:

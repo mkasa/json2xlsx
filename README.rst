@@ -50,7 +50,40 @@ a table like this:
 Isn't it super-easy? Here, `test.ts` is a script that defines the table.
 Let's call it *table script*.
 `-j` option specifies an input JSON file. You can specify as many `-j`
-as you wish. `-o` gives the name of the output file.
+as you wish. `-o` gives the name of the output file::
+
+    $ cat test.json
+    [{"name": "John", "age": 30,
+      "sex": "male"},
+     {"name": "Alice", "age": 18,
+      "sex": "female"}
+    ]
+
+This would give the following result.
+
++-----+-----+------+
+|name | age | sex  |
++-----+-----+------+
+|John | 30  | male |
++-----+-----+------+
+|Alice| 18  |female|
++-----+-----+------+
+
+Another way is that you give `-l` option to specify that each line in the input
+comprises a single JSON object. In this mode, each line must contain strictly
+one JSON object::
+
+    $ cat test.json
+    {"name": "John", "age": 30, "sex": "male"}
+    {"name": "Alice", "age": 18, "sex": "female"}
+    $ json2xslx test.ts -l -j test.json -o output.xlsx
+
+This would give the same table as above.
+
+Multiple Rows
+-------------
+If you would like to add more than one row, there are two ways to go.
+The first one is that you can give an JSON array as input.
 
 ad hoc Query Example
 --------------------
@@ -200,8 +233,6 @@ Below we show the coordinates.
 |John | 30    | male  | (2,0) | (2,1) |
 +-----+-------+-------+-------+-------+
 
-At this moment, negative values are not allowed for coordinates.
-
 CSV Support
 -----------
 Comma Separated Values (CSV) is also supported.
@@ -216,6 +247,12 @@ Here is the content of employee1.csv::
     "Alice","18","female"
 
 Note that the order of the column must be the same as the column definition in the table.
+If you would like to reorder the columns, you can specify the column order::
+
+    table { "sex", "age", "name"; }
+    loadcsv "employee1.csv" 2,1,0;
+
+You can use `-1` for a blank column.
 
 Miscellanous
 ------------
