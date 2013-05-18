@@ -1,7 +1,7 @@
 =========
 json2xlsx
 =========
-A tool to generate xlsx (Excel Spreadsheet) files from JSON files
+json2xlsx is a tool to generate MS-Excel Spreadsheets from JSON files.
 
 Installation
 ------------
@@ -106,9 +106,10 @@ You can add styles to columns::
 
 1. `width` specifies the width of the column. The unit is unknown (I do not know), so please refer to the openpyxl document for details (although even I have not yet found the answer there).
 2. `align right`, `align center`, `align left` will justify the column.
-3. `color` specifies the color of the cell.
-4. `number` gives the number style of the cell. This will be described in details later.
-5. `border` adds a border to the cell.
+3. `halign right`, `halign center`, `halign left` will justify the heading.
+4. `color` specifies the color of the cell.
+5. `number` gives the number style of the cell. This will be described in details later.
+6. `border` adds a border to the cell.
 
 Number Style
 ------------
@@ -146,6 +147,8 @@ The generated table will look like this.
 +-----+-------+-------+
 |John | 30    | male  |
 +-----+-------+-------+
+
+Nesting is allowed.
 
 License
 -------
