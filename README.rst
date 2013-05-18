@@ -196,7 +196,8 @@ You can create multiple tables in a sheet::
     # You can write comments here.
     namesheet "Employee List";
     table { "name", "age", "sex"; }
-    load "employee1.json";
+    # equivalent to "-l -j employee1.json" in the command line
+    load "employee1.json" linebyline;
     # vskip adds specified number of blank rows.
     vskip 1;
     table { "company", "revenue"; }
@@ -252,7 +253,17 @@ If you would like to reorder the columns, you can specify the column order::
     table { "sex", "age", "name"; }
     loadcsv "employee1.csv" 2,1,0;
 
-You can use `-1` for a blank column.
+You can use `-1` for a blank column::
+
+    table { "sex", "blank", "name"; }
+    loadcsv "employee1.csv" 2,-1,0;
+
+When the first line of the input CSV file is a header, give `withheader`::
+
+    table { "sex", "age", "name"; }
+    loadcsv "employee1.csv" 2,1,0 withheader;
+
+then you can skip the first line.
 
 Miscellanous
 ------------

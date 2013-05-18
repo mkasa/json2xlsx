@@ -74,10 +74,12 @@ TableProperty = BorderAddition
 TableDeclaration = Suppress(Keyword("table")) - Group(Optional(LiteralString)) - Group(Optional(ColorAddition)) - Group(ZeroOrMore(TableProperty)) - TableBlock
 TableDeclaration.setParseAction( lambda s,l,t: \
         merge_dict({"type": "table", "content": t[3:], "caption": upk(t[0]), "color": upk(t[1])}, t[2].asList()) )
-LoadFromFileStatement = Suppress(Keyword("load")) - LiteralString - Group(Optional(Suppress("as") | LiteralString)) - DELIMITER
-LoadFromFileStatement.setParseAction( lambda s,l,t: {"type": "load", "filename": t[0], "caption": upk(t[1])} )
-LoadCSVFromFileStatement = Suppress(Keyword("loadcsv")) - LiteralString - Group(Optional(Suppress("as") | LiteralString)) - Group(Optional(delimitedList(NumberString))) - DELIMITER
-LoadCSVFromFileStatement.setParseAction( lambda s,l,t: {"type": "loadcsv", "filename": t[0], "caption": upk(t[1]), "column_order": t[2]} )
+LoadFromFileStatement = Suppress(Keyword("load")) - LiteralString - Group(Optional(Suppress("as") | LiteralString)) - Group(Optional("linebyline")) - DELIMITER
+LoadFromFileStatement.setParseAction( lambda s,l,t: {"type": "load", "filename": t[0], "caption": upk(t[1]), "line_by_line": upk(t[2])} )
+LoadCSVFromFileStatement = Suppress(Keyword("loadcsv")) - LiteralString - Group(Optional(Suppress("as") |\
+        LiteralString)) - Group(Optional(delimitedList(NumberString))) - Group(Optional("withheader")) - DELIMITER
+LoadCSVFromFileStatement.setParseAction( lambda s,l,t: {"type": "loadcsv", "filename": t[0],\
+        "caption": upk(t[1]), "column_order": t[2], "withheader": upk(t[3])} )
 WriteToFileStatement = Suppress(Keyword("write") | Keyword("save")) - LiteralString - Group(Optional(Keyword("open"))) - DELIMITER
 WriteToFileStatement.setParseAction( lambda s,l,t: {"type": "save", "filename": t[0], "open": upk(t[1])} )
 ShowHeaderStatement = Suppress(Keyword("header")) - DELIMITER
@@ -343,10 +345,12 @@ def main_real():
         workbook.save(filename = file_name)
         has_anything_output[0] = True
 
-    def load_from_csv_file_and_render(file_name, column_order, caption):
+    def load_from_csv_file_and_render(file_name, column_order, caption, has_header):
         try:
             with open(file_name, 'r') as csvfile:
                 reader = csv.reader(csvfile)
+                if has_header:
+                    dummy_line = reader.readline()
                 for row in reader:
                     render_csv_data(workbook, cursor, render_state, column_order, row)
         except IOError as e:
@@ -410,9 +414,9 @@ def main_real():
                 render(workbook, cursor, y_size, x_size, render_state, [render_state['current_table']])
                 render_state['header_needed'] = False
             if node_type == 'load':
-                load_from_json_file_and_render(node['filename'], node['caption'])
+                load_from_json_file_and_render(node['filename'], node['caption'], node['linebyline'] != None)
             elif node_type == 'loadcsv':
-                load_from_csv_file_and_render(node['filename'], node['column_order'], node['caption'])
+                load_from_csv_file_and_render(node['filename'], node['column_order'], node['caption'], node['has_header'])
         elif node_type == 'save':
             write_the_book_to_file(node['filename'])
             if node['open'] != None: subprocess.call(["open", node['filename']])
