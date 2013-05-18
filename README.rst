@@ -71,7 +71,13 @@ For example, you may want to use "Full Name (Family, Given)" instead of
 a JSON key "name". You can use `as` modifiers to do this::
 
     table {
-        "name" as "Full Name (Family, Given);
+        "name" as "Full Name (Family, Given)";
+    }
+
+You can use `"\n"` to wrap in a cell::
+
+    table {
+        "name" as "Full Name\n(Family, Given)";
     }
 
 Saving a Few Types
@@ -158,7 +164,7 @@ You can create multiple tables in a sheet::
     namesheet "Employee List";
     table { "name", "age", "sex"; }
     load "employee1.json";
-    # vskip adds a space of specified lines.
+    # vskip adds specified number of blank rows.
     vskip 1;
     table { "company", "revenue"; }
     # You can add as many files.
@@ -170,6 +176,31 @@ You can create multiple tables in a sheet::
     table { "product", "code", "price"; }
     load "product1.json";
     load "product2.json";
+    # You can add "-o output.xlsx" in the command line, but here we specify it in the script.
+    write "output.xlsx";
+
+Adding a comment in a sheet
+---------------------------
+We often want to add a comment to a spreadsheet::
+
+    table { "name", "age", "sex"; }
+    load "employee1.json";
+    legend 2, 0 "As of Apr. 2000";
+
+`legend` command takes coordinates and a string, and writes the string in the cell.
+The coordinates is a pair of two integers, *row, column*.
+It originates at the cell right next to the top right of the table.
+Below we show the coordinates.
+
++-----+---------------+-------+-------+
+|     | personal info | (0,0) | (0,1) |
+|     +-------+-------+-------+-------+
+|name | age   | sex   | (1,0) | (1,1) |
++-----+-------+-------+-------+-------+
+|John | 30    | male  | (2,0) | (2,1) |
++-----+-------+-------+-------+-------+
+
+At this moment, negative values are not allowed for coordinates.
 
 Miscellanous
 ------------
