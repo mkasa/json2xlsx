@@ -36,7 +36,7 @@ Let's begin with a smallest example::
     {"name": "John", "age": 30, "sex": "male"}
     $ cat test.ts
     table { "name"; "age"; "sex"; }
-    $ json2xslx test.ts -j test.json -o output.xlsx
+    $ json2xlsx test.ts -j test.json -o output.xlsx
 
 This will create an Excel Spreadsheet 'output.xlsx' that contains
 a table like this:
@@ -76,7 +76,7 @@ one JSON object::
     $ cat test.json
     {"name": "John", "age": 30, "sex": "male"}
     {"name": "Alice", "age": 18, "sex": "female"}
-    $ json2xslx test.ts -l -j test.json -o output.xlsx
+    $ json2xlsx test.ts -l -j test.json -o output.xlsx
 
 This would give the same table as above.
 
