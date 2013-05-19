@@ -56,7 +56,7 @@ NumberStyleAddition.setParseAction( lambda s,l,t: {"number": t[0]} )
 ColumnWidthAddition = Suppress(Keyword("width")) - NumberString
 ColumnWidthAddition.setParseAction( lambda s,l,t: {"column_width": t[0]} )
 AttributeProperty = ColorAddition | AlignmentAddition | HeadingAlignmentAddition | NumberStyleAddition | ColumnWidthAddition
-AttributeStatement = BareString - Group(Optional(Suppress("as") - LiteralString)) - Group(ZeroOrMore(AttributeProperty))
+AttributeStatement = LiteralString - Group(Optional(Suppress("as") - LiteralString)) - Group(ZeroOrMore(AttributeProperty))
 AttributeStatement.setParseAction( lambda s,l,t: \
         merge_dict({"type": "attr", "select": t[0], "caption": upk(t[1])}, t[2].asList()) )
 GroupBlock = Forward()
