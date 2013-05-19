@@ -364,6 +364,13 @@ def main_real():
             except IOError as a:
                 print >>sys.stderr, "ERROR: could not open '%s'" % file_name
                 sys.exit(4)
+            except ValueError as e:
+                print >>sys.stderr, "ERROR: JSON Parsing", e
+                print >>sys.stderr, "       This error may occur when the input file contain multiple JSON objects."
+                print >>sys.stderr, "       When you want to include multiple JSON objects in a single file,"
+                print >>sys.stderr, "       Give '-l' to json2xlsx, and place a single JSON object in each line in an input file."
+                print >>sys.stderr, "       That above restriction may sound too strict, but removing this restriction requires"
+                print >>sys.stderr, "       significant reengineering of the standard JSON module of Python."
         else:
             try:
                 file_obj = open(file_name, "r")
@@ -383,7 +390,7 @@ def main_real():
                     if line_str == "": return
                     json_obj = json.loads(line_str)
             except:
-                print >>sys.stderr, "ERROR: JSON error at line ", line_number
+                print >>sys.stderr, "ERROR: JSON parsing error at line ", line_number
                 sys.exit(5)
             if type(json_obj) == type([]):
                 for i, child in enumerate(json_obj):
