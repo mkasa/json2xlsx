@@ -162,26 +162,33 @@ You can add styles to columns::
   }
 
 1. `width` specifies the width of the column. The unit is unknown (I do not know), so please refer to the openpyxl document for details (although even I have not yet found the answer there).
-2. `align right`, `align center`, `align left` will justify the column.
-3. `halign right`, `halign center`, `halign left` will justify the heading.
-4. `color` specifies the color of the cell.
+2. `align right`, `align center`, `align left` will align columns (without the heading) as specified.
+3. `halign right`, `halign center`, `halign left` will align the heading columns as specified.
+4. `color` specifies the color of the cell. See Color class in style.py of openpyxl for the complete list of the preset colors. Please let me know if you need hex-style colors (json2xlsx does not support it yet).
 5. `number` gives the number style of the cell. This will be described in details later.
-6. `border` adds a border to the cell.
+6. `border` adds a border to the cell. Currently, "thinbottom", "thickbottom" and "doublebottom" are the only available options. Please let me know if you find any use case in which you need others (Border class in style.py of openpyxl tells you what kinds of borders are available) and you would like to see it implemented.
 
 Number Style
 ------------
 The number style is presumably an internal string used in MS Excel.
-Here are a couple of examples.
+Here are a couple of examples. See NumberFormat class in style.py
+of openpyxl for other examples.
 
-+---------------------+---------+-----------------------------------+
-| Number Format Style | Example | Description                       |
-+---------------------+---------+-----------------------------------+
-| `%`                 |  24%    | Percentage                        |
-+---------------------+---------+-----------------------------------+
-| `#,##`              | 123,456 | Insert ',' every 3 digits         |
-+---------------------+---------+-----------------------------------+
-| `0.000`             |  12.345 | Three digits after decimal point  |
-+---------------------+---------+-----------------------------------+
++---------------------+----------+-----------------------------------+
+| Number Format Style | Example  | Description                       |
++---------------------+----------+-----------------------------------+
+| `%`                 |  24%     | Percentage                        |
++---------------------+----------+-----------------------------------+
+| `#,##`              | 123,456  | Insert ',' every 3 digits         |
++---------------------+----------+-----------------------------------+
+| `0.000`             |  12.345  | Three digits after decimal point  |
++---------------------+----------+-----------------------------------+
+| `@`                 |24        | Force text                        |
++---------------------+----------+-----------------------------------+
+| `yyyy-mm-dd`        |2013/11/23| Date                              |
++---------------------+----------+-----------------------------------+
+| `0.00+E00`          |1.23+E10  | Scientific notation               |
++---------------------+----------+-----------------------------------+
 
 Grouping
 --------
@@ -286,6 +293,12 @@ then you can skip the first line.
 Miscellanous
 ------------
 You can use non-ASCII characters. UTF-8 is the only supported coding.
+
+Changelog
+---------
+2013/06/05 FIX: attributes did not show up when the table caption is specified.
+2013/06/05 ADD: better document on cell styles.
+2013/05/24 Initial upload to PyPI
 
 Note
 ----

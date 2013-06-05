@@ -163,11 +163,14 @@ def set_column_width_if_needed(worksheet, column, width_style):
 
 def set_range_border_if_needed(worksheet, yrange, xrange, border_style):
     if border_style == None or border_style == "": return
-    if border_style == "thinbottom":
-        for x in range(xrange[0], xrange[1] + 1):
-            worksheet.cell(row = yrange[1], column = x).style.borders.bottom.border_style = openpyxl.style.Border.BORDER_THIN
-    else:
+    cell_style = None
+    if border_style == "thinbottom":   cell_style = openpyxl.style.Border.BORDER_THIN
+    if border_style == "thickbottom":  cell_style = openpyxl.style.Border.BORDER_THICK
+    if border_style == "doublebottom": cell_style = openpyxl.style.Border.BORDER_DOUBLE
+    if border_style == None:
         raise RenderingError("Unknown border style '%s'" % border_style)
+    for x in range(xrange[0], xrange[1] + 1):
+        worksheet.cell(row = yrange[1], column = x).style.borders.bottom.border_style = border_style
 
 def render(workbook, cursor, y_range, x_range, render_state, tree):
     for node in tree:
