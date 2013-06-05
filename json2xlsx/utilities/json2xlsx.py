@@ -7,7 +7,7 @@ from pyparsing import *
 import argparse, subprocess
 import openpyxl, json, csv
 
-debugging = False
+debugging = True
 
 def upk(stuff):
     if len(stuff) <= 0:
@@ -181,7 +181,7 @@ def render(workbook, cursor, y_range, x_range, render_state, tree):
         if debugging: print "Process ", node
         node_type = node['type']
         if node_type == 'attr':
-            cell = current_sheet.cell(row = cursor[0] + y_range, column = cursor[1])
+            cell = current_sheet.cell(row = cursor[0] + y_range - 1, column = cursor[1])
             caption = node.get('caption')
             if caption == None: caption = node['select']
             set_cell_value_and_wrap_if_needed(cell, caption)
@@ -193,14 +193,16 @@ def render(workbook, cursor, y_range, x_range, render_state, tree):
             cell = current_sheet.cell(row = cursor[0], column = cursor[1])
             caption = node['caption']
             new_cursor = [cursor[0], cursor[1]]
+            new_y_range = y_range
             if caption != None:
                 set_cell_value_and_wrap_if_needed(cell, caption)
                 set_cell_color_if_needed(cell, node.get('color'))
                 current_sheet.merge_cells(start_row = cursor[0], start_column = cursor[1], end_row = cursor[0], end_column = cursor[1] + x_range - 1)
                 set_range_border_if_needed(current_sheet, [cursor[0], cursor[0] + y_range - 1], [cursor[1], cursor[1] + x_range - 1], node.get('border'))
                 new_cursor[0] += 1
+                new_y_range -= 1
             children = node['content']
-            render(workbook, new_cursor, y_range - 1, x_range, render_state, children)
+            render(workbook, new_cursor, new_y_range, x_range, render_state, children)
             render_state['table.left']  = cursor[1]
             render_state['table.right'] = cursor[1] + x_range - 1
             render_state['table.top']   = cursor[0]
