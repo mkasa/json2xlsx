@@ -7,7 +7,7 @@ from pyparsing import *
 import argparse, subprocess
 import openpyxl, json, csv
 
-debugging = True
+debugging = False
 
 def upk(stuff):
     if len(stuff) <= 0:
@@ -15,8 +15,6 @@ def upk(stuff):
     return stuff[0]
 
 def merge_dict(d1, d2):
-    # print "D1: ", d1
-    # print "D2: ", d2
     if d2 == None: return d1
     if type(d2) == dict:
         for k, v in d2.iteritems():
@@ -28,7 +26,6 @@ def merge_dict(d1, d2):
     else:
         print "Assertion Error: Missing .asList()?", type(d2), type([])
         sys.exit(99)
-    # print "Merged: ", d1
     return d1
 
 LPAREN = Suppress("(")
