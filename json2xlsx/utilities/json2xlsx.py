@@ -170,7 +170,7 @@ def set_range_border_if_needed(worksheet, yrange, xrange, border_style):
     if border_style == None:
         raise RenderingError("Unknown border style '%s'" % border_style)
     for x in range(xrange[0], xrange[1] + 1):
-        worksheet.cell(row = yrange[1], column = x).style.borders.bottom.border_style = border_style
+        worksheet.cell(row = yrange[1] + 1, column = x + 1).style.borders.bottom.border_style = border_style
 
 def render(workbook, cursor, y_range, x_range, render_state, tree):
     for node in tree:
@@ -181,7 +181,7 @@ def render(workbook, cursor, y_range, x_range, render_state, tree):
         if debugging: print "Process ", node
         node_type = node['type']
         if node_type == 'attr':
-            cell = current_sheet.cell(row = cursor[0] + y_range - 1, column = cursor[1])
+            cell = current_sheet.cell(row = cursor[0] + y_range - 1 + 1, column = cursor[1] + 1)
             caption = node.get('caption')
             if caption == None: caption = node['select']
             set_cell_value_and_wrap_if_needed(cell, caption)
@@ -190,14 +190,14 @@ def render(workbook, cursor, y_range, x_range, render_state, tree):
             render_state['column_to_attr'][cursor[1]] = {"align": node.get('align'), "number": node.get('number'), "color": node.get('color')}
             cursor[1] += 1
         elif node_type == 'table':
-            cell = current_sheet.cell(row = cursor[0], column = cursor[1])
+            cell = current_sheet.cell(row = cursor[0] + 1, column = cursor[1] + 1)
             caption = node['caption']
             new_cursor = [cursor[0], cursor[1]]
             new_y_range = y_range
             if caption != None:
                 set_cell_value_and_wrap_if_needed(cell, caption)
                 set_cell_color_if_needed(cell, node.get('color'))
-                current_sheet.merge_cells(start_row = cursor[0], start_column = cursor[1], end_row = cursor[0], end_column = cursor[1] + x_range - 1)
+                current_sheet.merge_cells(start_row = cursor[0] + 1, start_column = cursor[1] + 1, end_row = cursor[0] + 1, end_column = cursor[1] + x_range - 1 + 1)
                 set_range_border_if_needed(current_sheet, [cursor[0], cursor[0] + y_range - 1], [cursor[1], cursor[1] + x_range - 1], node.get('border'))
                 new_cursor[0] += 1
                 new_y_range -= 1
@@ -214,11 +214,11 @@ def render(workbook, cursor, y_range, x_range, render_state, tree):
             children = node['content']
             (child_y, child_x) = size_render(children)
             if debugging: print "Child size (%d x %d)" % (child_y, child_x)
-            cell = current_sheet.cell(row = cursor[0], column = cursor[1])
+            cell = current_sheet.cell(row = cursor[0] + 1, column = cursor[1] + 1)
             caption = node['caption']
             set_cell_value_and_wrap_if_needed(cell, caption)
             set_cell_color_if_needed(cell, node.get('color'))
-            current_sheet.merge_cells(start_row = cursor[0], start_column = cursor[1], end_row = cursor[0], end_column = cursor[1] + child_x - 1)
+            current_sheet.merge_cells(start_row = cursor[0] + 1, start_column = cursor[1] + 1, end_row = cursor[0] + 1, end_column = cursor[1] + child_x - 1 + 1)
             set_range_border_if_needed(current_sheet, [cursor[0], cursor[0] + y_range - 1], [cursor[1], cursor[1] + child_x - 1], node.get('border'))
             if debugging: print "merge (%d, %d) - (%d, %d)" % (cursor[0], cursor[1], cursor[0], cursor[1] + child_x - 1)
             new_cursor = [cursor[0] + 1, cursor[1]]
@@ -252,7 +252,7 @@ def render_csv_data(workbook, cursor, render_state, column_order, csv):
         column_order = [int(x) for x in column_order]
     for index in range(len(column_order)):
         if debugging: print "Process ", value
-        cell = current_sheet.cell(row = cursor[0], column = cursor[1])
+        cell = current_sheet.cell(row = cursor[0] + 1, column = cursor[1] + 1)
         csv_index = column_order[index]
         if 0 <= csv_index:
             cell.value = csv[csv_index]
@@ -274,7 +274,7 @@ def render_data(workbook, cursor, render_state, tree):
     current_sheet = render_state['current_sheet']
     for node in tree:
         if debugging: print "Process ", node
-        cell = current_sheet.cell(row = cursor[0], column = cursor[1])
+        cell = current_sheet.cell(row = cursor[0] + 1, column = cursor[1] + 1)
         node_type = node['type']
         if node_type == 'attr':
             json_node = render_state['json_object']
