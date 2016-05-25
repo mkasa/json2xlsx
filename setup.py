@@ -17,7 +17,7 @@ setup(name='json2xlsx',
       packages=['json2xlsx', 'json2xlsx.utilities'],
       zip_safe=True,
       classifiers=[
-          'Development Status :: 4 - Beta',
+          'Development Status :: 5 - Production/Stable',
           'Environment :: Console',
           'Intended Audience :: Developers',
           'Intended Audience :: End Users/Desktop',
