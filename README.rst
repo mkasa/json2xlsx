@@ -296,6 +296,7 @@ You can use non-ASCII characters. UTF-8 is the only supported coding.
 
 Changelog
 ---------
+2016/05/26 FIX: work with newer pyparsing/openpyxl packages.
 2013/06/05 FIX: attributes did not show up when the table caption is specified.
 2013/06/05 ADD: better document on cell styles.
 2013/05/24 Initial upload to PyPI

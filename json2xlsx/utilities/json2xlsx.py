@@ -338,7 +338,7 @@ def main_real():
     workbook = openpyxl.Workbook()
     cursor = [0, 0]
     has_anything_output = [False]
-    render_state = {"current_sheet": workbook.get_active_sheet(),\
+    render_state = {"current_sheet": workbook.active,\
             "column_to_attr": {}, "header_needed": False,\
             "current_table": None}
 
