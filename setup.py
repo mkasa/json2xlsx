@@ -39,8 +39,7 @@ setup(name='json2xlsx',
       install_requires = [
           'argparse>=1.2.1',
           'openpyxl>=2.3',
-          'pyparsing>=1.5.5',
-          'pyparsing<2.0.0'
+          'pyparsing>=1.5.5'
       ],
       )
 
